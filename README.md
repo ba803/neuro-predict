@@ -186,13 +186,13 @@ This repository includes an automated GitHub Actions deployment workflow (`.gith
 
 ### Enable GitHub Pages in your Repository:
 
-1. Navigate to your repository on GitHub: `https://github.com/<USERNAME>/neuro-predict`.
+1. Navigate to your repository on GitHub: `https://github.com/ba803/neuro-predict`.
 2. Click **Settings** (top navigation tab).
 3. In the left sidebar, click **Pages**.
 4. Under **Build and deployment** → **Source**, select **GitHub Actions**.
 5. Push to the `main` branch. GitHub Actions will automatically deploy your frontend.
 6. Your live site will be accessible at:
-   `https://<USERNAME>.github.io/neuro-predict/`
+   `https://ba803.github.io/neuro-predict/`
 
 ---
 
