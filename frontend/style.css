@@ -127,58 +127,6 @@ body {
   font-weight: 500;
 }
 
-/* Service Status Indicator Pill */
-.service-status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem 0.9rem;
-  border-radius: var(--radius-full);
-  background-color: var(--bg-subtle);
-  border: 1px solid var(--border-light);
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-soft);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  user-select: none;
-}
-
-.service-status-pill:hover {
-  background-color: var(--bg-hover);
-  border-color: #cbd5e1;
-}
-
-.service-status-pill.status-online {
-  background-color: #ecfdf5;
-  border-color: #a7f3d0;
-  color: #065f46;
-}
-
-.service-status-pill.status-offline {
-  background-color: #f8fafc;
-  border-color: #e2e8f0;
-  color: #64748b;
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-  transition: all 0.2s ease;
-}
-
-.status-dot.online {
-  background-color: #10b981;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
-}
-
-.status-dot.offline {
-  background-color: #94a3b8;
-  border: 1px solid #64748b;
-}
-
 /* ===================================================================
    Clear Notice Bar
    =================================================================== */

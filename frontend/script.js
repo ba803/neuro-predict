@@ -50,7 +50,6 @@ let completedSteps = { 1: false, 2: false, 3: false, 4: false };
 let assessmentResult = null;
 let chartLikelihoodInstance = null;
 let chartFactorsInstance = null;
-let healthPollInterval = null;
 
 // Preset Definitions (for quick testing only)
 const TEST_PROFILES = {
@@ -81,76 +80,12 @@ const TEST_PROFILES = {
 // Initialization
 // -------------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
-  setupServiceStatus();
   setupStepNavigation();
   setupTestProfiles();
   setupValidation();
   setupFormSubmission();
   setupReportActions();
 });
-
-// -------------------------------------------------------------------
-// Service Health Monitor & Dynamic URL Configuration
-// -------------------------------------------------------------------
-async function checkServiceHealth() {
-  const pill = document.getElementById("service-status-pill");
-  const dot = document.getElementById("status-dot");
-  const text = document.getElementById("status-text");
-  if (!pill || !dot || !text) return;
-
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6000);
-    const res = await fetch(`${API_URL}/health`, {
-      method: "GET",
-      signal: controller.signal,
-      headers: { "Accept": "application/json" }
-    });
-    clearTimeout(timeoutId);
-
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.status === "online") {
-        dot.className = "status-dot online";
-        text.textContent = "● Assessment Service Online";
-        pill.title = `Connected to: ${API_URL}`;
-        pill.classList.remove("status-offline");
-        pill.classList.add("status-online");
-        return;
-      }
-    }
-    throw new Error("Unexpected service status");
-  } catch (err) {
-    dot.className = "status-dot offline";
-    text.textContent = "○ Assessment Service Offline";
-    pill.title = `Service unreachable at ${API_URL}. Click to change backend URL.`;
-    pill.classList.remove("status-online");
-    pill.classList.add("status-offline");
-  }
-}
-
-function setupServiceStatus() {
-  const pill = document.getElementById("service-status-pill");
-  if (pill) {
-    pill.addEventListener("click", () => {
-      const current = localStorage.getItem("NEURO_BACKEND_URL") || API_URL;
-      const promptMsg = `NeuroPredict Backend URL Configuration:\n\nCurrent API URL:\n${current}\n\nEnter your production backend URL (e.g. https://your-app.onrender.com) or leave blank to reset:`;
-      const entered = prompt(promptMsg, current);
-      if (entered !== null) {
-        const trimmed = entered.trim();
-        if (trimmed === "" || trimmed === "http://localhost:8000") {
-          localStorage.removeItem("NEURO_BACKEND_URL");
-        } else {
-          localStorage.setItem("NEURO_BACKEND_URL", trimmed);
-        }
-        window.location.reload();
-      }
-    });
-  }
-
-  checkServiceHealth();
-  healthPollInterval = setInterval(checkServiceHealth, 15000);
-}
 
 // -------------------------------------------------------------------
 // Step Navigation (4 Steps)
