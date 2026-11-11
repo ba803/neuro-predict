@@ -7,14 +7,14 @@
 // Backend API Configuration
 // ===================================================================
 // Set your production hosted backend URL here when deployed (e.g. Render, Koyeb, HF):
-// Example: const BACKEND_URL = "https://neuropredict-api.onrender.com";
-const BACKEND_URL = "http://localhost:8000";
+// Production Hosted Backend URL on Render
+const BACKEND_URL = "https://neuro-predict-u43g.onrender.com";
 
 /**
  * Dynamically resolves the API base URL:
  * 1. Checks runtime localStorage or window.API_URL overrides
- * 2. Checks configured production BACKEND_URL
- * 3. Defaults to localhost:8000 for local development
+ * 2. If running locally (localhost / 127.0.0.1), uses http://localhost:8000
+ * 3. On production (e.g. GitHub Pages, mobile), connects to BACKEND_URL
  */
 function resolveApiUrl() {
   if (typeof window !== "undefined") {
@@ -27,21 +27,15 @@ function resolveApiUrl() {
     }
   }
 
-  // If BACKEND_URL was changed to a production URL, use it
-  if (BACKEND_URL && !BACKEND_URL.includes("localhost") && !BACKEND_URL.includes("127.0.0.1")) {
-    return BACKEND_URL.replace(/\/+$/, "");
-  }
-
-  // 3. Local development check
+  // Local development check
   const hostname = window.location.hostname;
   const origin = window.location.origin;
   if (!origin || origin.startsWith("file:") || hostname === "localhost" || hostname === "127.0.0.1" || origin.includes(":3000") || origin.includes(":5500")) {
     return "http://localhost:8000";
   }
 
-  // 4. On GitHub Pages or public web: return empty if no public backend configured
-  // (Prevents mobile browsers from attempting to access localhost on the phone)
-  return "";
+  // Production hosted backend URL
+  return BACKEND_URL.replace(/\/+$/, "");
 }
 
 const API_URL = resolveApiUrl();
