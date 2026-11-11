@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeuroPredict | Alzheimer's Risk Assessment</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <!-- Chart.js (Local offline bundle with CDN fallback) -->
+  <script src="chart.umd.min.js"></script>
+  <script>
+    if (typeof Chart === 'undefined') {
+      document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>');
+    }
+  </script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Simple Header -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="brand">
+        <div class="brand-logo" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a4 4 0 0 0-4 4v1a4 4 0 0 0-4 4v2a4 4 0 0 0 4 4v1a4 4 0 0 0 4 4"></path>
+            <path d="M12 2a4 4 0 0 1 4 4v1a4 4 0 0 1 4 4v2a4 4 0 0 1-4 4v1a4 4 0 0 1-4 4"></path>
+            <path d="M12 8v8"></path>
+            <path d="M8 12h8"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">NeuroPredict</span>
+          <span class="brand-subtitle">Alzheimer's Risk Assessment</span>
+        </div>
+      </div>
+
+      <!-- Service Status Indicator -->
+      <div class="service-status-pill" id="service-status-pill" aria-live="polite">
+        <span class="status-dot offline" id="status-dot"></span>
+        <span class="status-text" id="status-text">Checking Service...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Clear Unobtrusive Notice -->
+  <div class="notice-bar">
+    <div class="notice-container">
+      <div class="notice-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <p class="notice-text">
+        This application provides an assessment based on the information entered and is intended for educational and research purposes. It is not a medical diagnosis and should not replace evaluation by a qualified healthcare professional.
+      </p>
+    </div>
+  </div>
+
+  <main class="main-container">
+
+    <!-- Four-Step Progress Tracker -->
+    <nav class="step-progress-wrapper" aria-label="Assessment progress">
+      <div class="step-progress">
+        
+        <!-- Step 1 Indicator -->
+        <button type="button" class="step-node active" id="node-step-1" data-step="1">
+          <div class="node-indicator">
+            <span class="node-num">1</span>
+            <span class="node-check">&#10003;</span>
+          </div>
+          <div class="node-text">
+            <span class="node-title">Your Details</span>
+          </div>
+        </button>
+
+        <div class="step-connector" id="conn-1-2"></div>
+
+        <!-- Step 2 Indicator -->
+        <div class="step-node" id="node-step-2" data-step="2">
+          <div class="node-indicator">
+            <span class="node-num">2</span>
+            <span class="node-check">&#10003;</span>
+          </div>
+          <div class="node-text">
+            <span class="node-title">Assessment</span>
+          </div>
+        </div>
+
+        <div class="step-connector" id="conn-2-3"></div>
+
+        <!-- Step 3 Indicator -->
+        <button type="button" class="step-node" id="node-step-3" data-step="3" disabled>
+          <div class="node-indicator">
+            <span class="node-num">3</span>
+            <span class="node-check">&#10003;</span>
+          </div>
+          <div class="node-text">
+            <span class="node-title">Results</span>
+          </div>
+        </button>
+
+        <div class="step-connector" id="conn-3-4"></div>
+
+        <!-- Step 4 Indicator -->
+        <button type="button" class="step-node" id="node-step-4" data-step="4" disabled>
+          <div class="node-indicator">
+            <span class="node-num">4</span>
+            <span class="node-check">&#10003;</span>
+          </div>
+          <div class="node-text">
+            <span class="node-title">Report &amp; Guidance</span>
+          </div>
+        </button>
+
+      </div>
+    </nav>
+
+    <!-- Global Feedback / Alert Banner -->
+    <div class="feedback-banner hidden" id="feedback-banner" role="alert">
+      <div class="feedback-icon" id="feedback-icon"></div>
+      <div class="feedback-text" id="feedback-text"></div>
+      <button type="button" class="feedback-close" id="feedback-close" aria-label="Close notification">&times;</button>
+    </div>
+
+    <!-- ===================================================================
+         VIEW 1: STEP 1 — YOUR DETAILS
+         =================================================================== -->
+    <section class="step-view" id="view-step-1">
+      <div class="card form-card">
+        
+        <div class="card-header">
+          <div class="header-content">
+            <h1 class="card-heading">Your Details</h1>
+            <p class="card-description">
+              Please enter the five assessment scores below. All questions are required.
+            </p>
+          </div>
+
+          <!-- Quick Test Profiles (clearly labeled for testing only) -->
+          <div class="test-profiles-bar">
+            <span class="profiles-label">Quick Test Profiles (for testing only):</span>
+            <div class="profile-buttons">
+              <button type="button" class="btn-profile" data-profile="healthy">Healthy Profile</button>
+              <button type="button" class="btn-profile" data-profile="borderline">Mild / Borderline</button>
+              <button type="button" class="btn-profile" data-profile="high-risk">High Risk Profile</button>
+            </div>
+          </div>
+        </div>
+
+        <form id="assessment-form" novalidate>
+          <div class="form-grid">
+
+            <!-- Field 1: Functional Assessment Score -->
+            <div class="form-group" id="group-fas">
+              <div class="form-label-row">
+                <label for="input-fas" class="field-label">Functional Assessment Score</label>
+                <span class="field-range">Range: 0 – 10</span>
+              </div>
+              <div class="input-container">
+                <input 
+                  type="number" 
+                  id="input-fas" 
+                  name="Functional_Assessment_Score" 
+                  min="0" 
+                  max="10" 
+                  step="0.1" 
+                  placeholder="e.g. 8.0" 
+                  required
+                  class="custom-input"
+                >
+                <span class="input-suffix">/ 10</span>
+              </div>
+              <p class="field-hint">Measures how independently a person manages everyday activities.</p>
+              <span class="field-error-msg" id="error-fas"></span>
+            </div>
+
+            <!-- Field 2: MMSE Score -->
+            <div class="form-group" id="group-mmse">
+              <div class="form-label-row">
+                <label for="input-mmse" class="field-label">MMSE Score</label>
+                <span class="field-range">Range: 0 – 30</span>
+              </div>
+              <div class="input-container">
+                <input 
+                  type="number" 
+                  id="input-mmse" 
+                  name="MMSE_Score" 
+                  min="0" 
+                  max="30" 
+                  step="1" 
+                  placeholder="e.g. 23" 
+                  required
+                  class="custom-input"
+                >
+                <span class="input-suffix">/ 30</span>
+              </div>
+              <p class="field-hint">A short assessment of memory, attention and thinking.</p>
+              <span class="field-error-msg" id="error-mmse"></span>
+            </div>
+
+            <!-- Field 3: ADL Score -->
+            <div class="form-group" id="group-adl">
+              <div class="form-label-row">
+                <label for="input-adl" class="field-label">ADL Score</label>
+                <span class="field-range">Range: 0 – 10</span>
+              </div>
+              <div class="input-container">
+                <input 
+                  type="number" 
+                  id="input-adl" 
+                  name="ADL_Score" 
+                  min="0" 
+                  max="10" 
+                  step="0.1" 
+                  placeholder="e.g. 6.0" 
+                  required
+                  class="custom-input"
+                >
+                <span class="input-suffix">/ 10</span>
+              </div>
+              <p class="field-hint">Measures how independently a person manages everyday daily activities.</p>
+              <span class="field-error-msg" id="error-adl"></span>
+            </div>
+
+            <!-- Field 4: Memory Complaints -->
+            <div class="form-group" id="group-memory">
+              <div class="form-label-row">
+                <span class="field-label">Memory Complaints</span>
+                <span class="field-range">Select one</span>
+              </div>
+              <div class="radio-pill-group" role="radiogroup" aria-label="Memory complaints">
+                <label class="radio-pill">
+                  <input type="radio" name="Memory_Complaints" value="0" checked>
+                  <span class="pill-label">No</span>
+                </label>
+                <label class="radio-pill">
+                  <input type="radio" name="Memory_Complaints" value="1">
+                  <span class="pill-label">Yes</span>
+                </label>
+              </div>
+              <p class="field-hint">Are there noticeable or persistent memory difficulties?</p>
+              <span class="field-error-msg" id="error-memory"></span>
+            </div>
+
+            <!-- Field 5: Behavioral Problems -->
+            <div class="form-group" id="group-behavior">
+              <div class="form-label-row">
+                <span class="field-label">Behavioral Problems</span>
+                <span class="field-range">Select one</span>
+              </div>
+              <div class="radio-pill-group" role="radiogroup" aria-label="Behavioral problems">
+                <label class="radio-pill">
+                  <input type="radio" name="Behavioral_Problems" value="0" checked>
+                  <span class="pill-label">No</span>
+                </label>
+                <label class="radio-pill">
+                  <input type="radio" name="Behavioral_Problems" value="1">
+                  <span class="pill-label">Yes</span>
+                </label>
+              </div>
+              <p class="field-hint">Have there been noticeable changes in behavior or mood?</p>
+              <span class="field-error-msg" id="error-behavior"></span>
+            </div>
+
+          </div>
+
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="btn-continue">
+              <span>Continue Assessment</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+            <button type="button" class="btn btn-secondary" id="btn-clear-form">
+              Clear
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         VIEW 2: STEP 2 — ASSESSMENT (DEDICATED FULL-WIDTH LOADING SCREEN)
+         =================================================================== -->
+    <section class="step-view hidden" id="view-step-2">
+      <div class="card loading-card">
+        
+        <div class="circular-spinner-container">
+          <svg class="circular-spinner" viewBox="0 0 50 50">
+            <circle class="spinner-track" cx="25" cy="25" r="20" fill="none" stroke-width="4"></circle>
+            <circle class="spinner-circle" cx="25" cy="25" r="20" fill="none" stroke-width="4"></circle>
+          </svg>
+        </div>
+
+        <div class="loading-content">
+          <div class="loading-badge">Assessment</div>
+          <h2 class="loading-headline">Reviewing your assessment...</h2>
+          <p class="loading-subtext">Please wait a moment while your answers are checked.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         VIEW 3: STEP 3 — RESULTS
+         =================================================================== -->
+    <section class="step-view hidden" id="view-step-3">
+      
+      <!-- Compact Summary of Step 1 Values (Replaces original input form) -->
+      <div class="card compact-assessment-card">
+        <div class="compact-header">
+          <div class="compact-title-group">
+            <span class="compact-eyebrow">Step 1 Summary</span>
+            <h3 class="compact-title">Your Assessment</h3>
+          </div>
+          <button type="button" class="btn btn-outline-sm" id="btn-edit-details-1">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+            <span>Edit Details</span>
+          </button>
+        </div>
+
+        <div class="compact-values-grid">
+          <div class="compact-val-item">
+            <span class="c-val-label">Functional Assessment</span>
+            <span class="c-val-num" id="summary-fas">8 / 10</span>
+          </div>
+          <div class="compact-val-item">
+            <span class="c-val-label">MMSE Score</span>
+            <span class="c-val-num" id="summary-mmse">23 / 30</span>
+          </div>
+          <div class="compact-val-item">
+            <span class="c-val-label">ADL Score</span>
+            <span class="c-val-num" id="summary-adl">6 / 10</span>
+          </div>
+          <div class="compact-val-item">
+            <span class="c-val-label">Memory Complaints</span>
+            <span class="c-val-badge" id="summary-memory">Yes</span>
+          </div>
+          <div class="compact-val-item">
+            <span class="c-val-label">Behavioral Problems</span>
+            <span class="c-val-badge" id="summary-behavior">Yes</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Result Card -->
+      <div class="card result-card" id="main-result-card">
+        <div class="result-card-inner">
+          
+          <div class="result-header-col">
+            <span class="result-eyebrow">Assessment Result</span>
+            <div class="result-badge" id="res-badge">Higher Risk</div>
+            <p class="result-explanation" id="res-explanation">
+              Based on the information provided, the assessment indicates a higher level of risk. This result is based on the information entered in the assessment. It is intended for educational and research purposes and should not be treated as a medical diagnosis.
+            </p>
+          </div>
+
+          <div class="result-metrics-col">
+            <div class="likelihood-box likelihood-ad">
+              <span class="l-label">Alzheimer's likelihood</span>
+              <span class="l-number" id="res-prob-ad">98.5%</span>
+            </div>
+            <div class="likelihood-box likelihood-other">
+              <span class="l-label">Other likelihood</span>
+              <span class="l-number" id="res-prob-other">1.5%</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Visual Charts Grid (Likelihood & Key Factors) -->
+      <div class="results-visual-grid">
+        
+        <!-- Likelihood Chart -->
+        <div class="card visual-card">
+          <div class="visual-header">
+            <h3 class="visual-title">Assessment Likelihood</h3>
+            <p class="visual-subtitle">Visual breakdown of assessment distribution</p>
+          </div>
+          <div class="chart-box">
+            <canvas id="chart-likelihood-canvas"></canvas>
+            <div class="donut-center-metric">
+              <span class="center-large-pct" id="center-donut-pct">98.5%</span>
+              <span class="center-sub-label" id="center-donut-label">Higher Risk</span>
+            </div>
+          </div>
+          <div class="chart-legend-box" id="likelihood-legend-box">
+            <div class="legend-pill pill-ad">
+              <span class="legend-dot dot-ad"></span>
+              <span id="legend-text-ad">Higher Risk: 98.5%</span>
+            </div>
+            <div class="legend-pill pill-other">
+              <span class="legend-dot dot-other"></span>
+              <span id="legend-text-other">Lower Risk: 1.5%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Key Factors Horizontal Bar Chart -->
+        <div class="card visual-card">
+          <div class="visual-header">
+            <h3 class="visual-title">Key Factors</h3>
+            <p class="visual-subtitle">Factors considered most relevant in your assessment</p>
+          </div>
+          <div class="chart-box">
+            <canvas id="chart-factors-canvas"></canvas>
+          </div>
+          <div class="factors-chart-footnote">
+            Bars indicate the relative weighting of each factor in your assessment.
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Your Assessment Scores Visualization -->
+      <div class="card scores-card">
+        <div class="visual-header">
+          <h3 class="visual-title">Your Assessment Scores</h3>
+          <p class="visual-subtitle">Your entered scores displayed in an easy-to-read format</p>
+        </div>
+
+        <!-- Numeric Score Bars -->
+        <div class="score-meters-container">
+          
+          <div class="score-meter-row">
+            <div class="sm-label-col">
+              <span class="sm-name">Functional Assessment</span>
+              <span class="sm-value" id="meter-val-fas">8 / 10</span>
+            </div>
+            <div class="sm-bar-col">
+              <div class="sm-track">
+                <div class="sm-fill" id="meter-fill-fas" style="width: 80%;"></div>
+              </div>
+            </div>
+            <div class="sm-meaning-col" id="meter-meaning-fas">Good daily independence</div>
+          </div>
+
+          <div class="score-meter-row">
+            <div class="sm-label-col">
+              <span class="sm-name">MMSE Score</span>
+              <span class="sm-value" id="meter-val-mmse">23 / 30</span>
+            </div>
+            <div class="sm-bar-col">
+              <div class="sm-track">
+                <div class="sm-fill" id="meter-fill-mmse" style="width: 76.6%;"></div>
+              </div>
+            </div>
+            <div class="sm-meaning-col" id="meter-meaning-mmse">Needs attention</div>
+          </div>
+
+          <div class="score-meter-row">
+            <div class="sm-label-col">
+              <span class="sm-name">ADL Score</span>
+              <span class="sm-value" id="meter-val-adl">6 / 10</span>
+            </div>
+            <div class="sm-bar-col">
+              <div class="sm-track">
+                <div class="sm-fill" id="meter-fill-adl" style="width: 60%;"></div>
+              </div>
+            </div>
+            <div class="sm-meaning-col" id="meter-meaning-adl">Some difficulty</div>
+          </div>
+
+        </div>
+
+        <!-- Yes/No Status Cards -->
+        <div class="status-cards-row">
+          
+          <div class="status-indicator-card" id="status-card-memory">
+            <div class="sic-info">
+              <span class="sic-title">Memory Complaints</span>
+              <span class="sic-desc">Noticeable memory difficulties</span>
+            </div>
+            <span class="sic-badge" id="status-badge-memory">Yes (Reported)</span>
+          </div>
+
+          <div class="status-indicator-card" id="status-card-behavior">
+            <div class="sic-info">
+              <span class="sic-title">Behavioral Problems</span>
+              <span class="sic-desc">Noticeable changes in behavior or mood</span>
+            </div>
+            <span class="sic-badge" id="status-badge-behavior">Yes (Observed)</span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Key Factors Table (Simplified Table) -->
+      <div class="card table-card">
+        <div class="visual-header">
+          <h3 class="visual-title">Key Factors Summary</h3>
+          <p class="visual-subtitle">Quick overview of entered values and their simple meanings</p>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="simple-factors-table">
+            <thead>
+              <tr>
+                <th scope="col">Factor</th>
+                <th scope="col" class="th-val">Your Value</th>
+                <th scope="col">Meaning</th>
+              </tr>
+            </thead>
+            <tbody id="table-factors-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Step 3 Action Navigation Buttons -->
+      <div class="step-nav-bar">
+        <button type="button" class="btn btn-outline" id="btn-edit-details-2">
+          &larr; Edit Details
+        </button>
+        <button type="button" class="btn btn-primary" id="btn-go-to-report">
+          <span>View Report &amp; Guidance</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ===================================================================
+         VIEW 4: STEP 4 — REPORT & GUIDANCE
+         =================================================================== -->
+    <section class="step-view hidden" id="view-step-4">
+      
+      <!-- Report Container -->
+      <div class="card report-sheet">
+        
+        <!-- Report Document Header -->
+        <div class="report-doc-header">
+          <div class="rdh-brand">
+            <h2 class="rdh-title">NeuroPredict</h2>
+            <span class="rdh-subtitle">Detailed Assessment Report</span>
+          </div>
+          <div class="rdh-meta">
+            <div class="rdh-meta-item">
+              <span class="rdh-meta-label">Assessment Date</span>
+              <span class="rdh-meta-val" id="rep-date">November 11, 2026</span>
+            </div>
+            <div class="rdh-meta-item">
+              <span class="rdh-meta-label">Reference</span>
+              <span class="rdh-meta-val" id="rep-ref">NP-20261111-C33A29</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 1: Assessment Summary -->
+        <div class="report-section">
+          <h3 class="rep-sec-title">1. Assessment Summary</h3>
+          <div class="rep-summary-box">
+            <div class="rep-result-badge-row">
+              <span class="result-badge" id="rep-badge">Higher Risk</span>
+              <span class="rep-likelihood-text">
+                Alzheimer's likelihood: <strong id="rep-pct-ad">98.5%</strong> &nbsp;&bull;&nbsp; Other likelihood: <strong id="rep-pct-other">1.5%</strong>
+              </span>
+            </div>
+            <p class="rep-paragraph" id="rep-summary-p">
+              Based on the information provided, the assessment indicates a higher level of risk. This result is based on the information entered in the assessment. It is intended for educational and research purposes and should not be treated as a medical diagnosis.
+            </p>
+          </div>
+        </div>
+
+        <!-- Section 2: Your Information -->
+        <div class="report-section">
+          <h3 class="rep-sec-title">2. Your Information</h3>
+          <div class="rep-info-grid" id="rep-info-grid">
+            <!-- Dynamically populated with the 5 values -->
+          </div>
+        </div>
+
+        <!-- Section 3: Key Factors -->
+        <div class="report-section">
+          <h3 class="rep-sec-title">3. Key Factors Summary</h3>
+          <div class="table-wrapper">
+            <table class="simple-factors-table">
+              <thead>
+                <tr>
+                  <th scope="col">Factor</th>
+                  <th scope="col" class="th-val">Your Value</th>
+                  <th scope="col">Meaning</th>
+                </tr>
+              </thead>
+              <tbody id="rep-factors-table-body">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Section 4: Helpful Guidance -->
+        <div class="report-section">
+          <h3 class="rep-sec-title">4. Helpful Guidance</h3>
+          
+          <div class="guidance-subsection">
+            <h4 class="guidance-subhead">Personalized Suggestions</h4>
+            <div class="guidance-cards-list" id="rep-personalized-guidance">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <div class="guidance-subsection">
+            <h4 class="guidance-subhead">General Healthy-Living Guidance</h4>
+            <ul class="wellness-bullets" id="rep-wellness-list">
+              <li>Maintain regular physical activity and gentle aerobic exercise.</li>
+              <li>Maintain a consistent and restful sleep routine.</li>
+              <li>Stay socially engaged with family, friends, and community.</li>
+              <li>Follow a balanced, nutritious diet and stay well hydrated.</li>
+              <li>Keep regular periodic health checkups with your doctor.</li>
+              <li>Keep track of noticeable changes in memory, mood, or daily routines over time.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Section 5: Important Notice -->
+        <div class="report-section">
+          <div class="report-notice-box">
+            <strong>Important Notice:</strong>
+            This application provides an assessment based on the information entered and is intended for educational and research purposes. It is not a medical diagnosis and should not replace evaluation by a qualified healthcare professional. Lifestyle suggestions do not prevent or cure Alzheimer's disease. No medications or medical treatments are prescribed.
+          </div>
+        </div>
+
+        <!-- Report Toolbar / Actions -->
+        <div class="report-toolbar">
+          <div class="toolbar-left">
+            <button type="button" class="btn btn-outline" id="btn-back-to-results">
+              &larr; Back to Results
+            </button>
+            <button type="button" class="btn btn-secondary" id="btn-edit-details-3">
+              Edit Details
+            </button>
+          </div>
+          <div class="toolbar-right">
+            <button type="button" class="btn btn-outline" id="btn-print-report">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+              </svg>
+              <span>Print</span>
+            </button>
+            <button type="button" class="btn btn-primary" id="btn-download-pdf">
+              <span class="btn-spinner hidden" id="pdf-spinner"></span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Download PDF</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Clean Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <strong>NeuroPredict</strong> &mdash; Alzheimer's Risk Assessment
+      </div>
+      <div class="footer-note">
+        Educational &amp; Research Tool &bull; Not a Medical Diagnosis
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

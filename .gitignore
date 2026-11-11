@@ -1,0 +1,45 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# Environment Variables & Secrets
+.env
+*.env
+.env.*
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Testing & Logs
+.pytest_cache/
+*.log
+
+# Sensitive / Private training datasets
+data/
+raw_data/
+training_data/
+*.csv
+
+# Assessment Reports Generated Output
+backend/reports/
+reports/*.pdf
+*.pdf
+
+# IDE settings
+.vscode/
+.idea/
