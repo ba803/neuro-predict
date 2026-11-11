@@ -165,6 +165,18 @@ function updateProgressTracker(activeStep) {
   updateConnector("conn-1-2", completedSteps[1]);
   updateConnector("conn-2-3", completedSteps[2]);
   updateConnector("conn-3-4", completedSteps[3]);
+
+  // Update Mobile Dedicated Active Step Banner
+  const stepTitles = {
+    1: "Your Details",
+    2: "Assessment",
+    3: "Results",
+    4: "Report & Guidance"
+  };
+  const mscStep = document.getElementById("mobile-step-num");
+  const mscName = document.getElementById("mobile-step-name");
+  if (mscStep) mscStep.textContent = `Step ${activeStep} of 4:`;
+  if (mscName) mscName.textContent = stepTitles[activeStep] || "";
 }
 
 function updateConnector(connId, isCompleted) {
