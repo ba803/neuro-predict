@@ -32,14 +32,16 @@ function resolveApiUrl() {
     return BACKEND_URL.replace(/\/+$/, "");
   }
 
-  // Local development check
+  // 3. Local development check
   const hostname = window.location.hostname;
   const origin = window.location.origin;
   if (!origin || origin.startsWith("file:") || hostname === "localhost" || hostname === "127.0.0.1" || origin.includes(":3000") || origin.includes(":5500")) {
     return "http://localhost:8000";
   }
 
-  return BACKEND_URL.replace(/\/+$/, "");
+  // 4. On GitHub Pages or public web: return empty if no public backend configured
+  // (Prevents mobile browsers from attempting to access localhost on the phone)
+  return "";
 }
 
 const API_URL = resolveApiUrl();
@@ -297,6 +299,14 @@ function setupFormSubmission() {
       Behavioral_Problems: parseInt(document.querySelector('input[name="Behavioral_Problems"]:checked').value, 10)
     };
 
+    if (!API_URL) {
+      showFeedback(
+        "The live cloud backend is not connected yet. Please deploy the backend on Render to enable live assessments on mobile and public devices.",
+        "error"
+      );
+      return;
+    }
+
     // Step A: Mark Step 1 complete
     completedSteps[1] = true;
 
@@ -335,7 +345,11 @@ function setupFormSubmission() {
 
     } catch (err) {
       console.error("Assessment Error:", err);
-      showFeedback(`Assessment failed: ${err.message || "Unable to reach server."}`, "error");
+      let msg = err.message || "Unable to reach server.";
+      if (msg === "Failed to fetch") {
+        msg = "Unable to connect to the backend server. Please verify that your cloud backend is active.";
+      }
+      showFeedback(`Assessment failed: ${msg}`, "error");
       // Return to Step 1 on error
       goToStep(1);
     }
