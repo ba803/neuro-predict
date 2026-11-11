@@ -139,7 +139,12 @@ Deploy the `backend/` directory to any free cloud service:
 
 ### Option A: Render (Recommended — Quickest)
 
-1. Create a free account at [render.com](https://render.com).
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/ba803/neuro-predict)
+
+#### One-Click Blueprint:
+Click the button above to deploy the FastAPI backend automatically using the included `render.yaml` blueprint.
+
+#### Or Manual Setup:
 2. Click **New +** → **Web Service**.
 3. Connect your GitHub repository (`neuro-predict`).
 4. Configure the service settings:
